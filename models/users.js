@@ -64,6 +64,12 @@ const schema = new Schema({
   role: { // 帳號權限識別
     type: Number, // 0: 一般使用者, 1: 管理員 (預設為 0)
     default: UserRole.USER // 使用 enums/UserRole.js 的統一設定，避免硬編碼
+  },
+  avatar: {
+    type: String,
+    default () {
+      return `https://source.boringavatars.com/beam/120/${this.account}?colors=4EB3DE,8DE0A6,FCF09F,F27C7C,DE528C`
+    }
   }
 }, {
   timestamps: true, // 為了產生時間戳記 (createdAt、updatedAt) ，用途：為了讓前端能夠知道資料的建立時間與更新時間

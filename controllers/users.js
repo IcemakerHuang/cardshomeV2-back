@@ -55,7 +55,10 @@ export const login = async (req, res) => {
         account: req.user.account,
         email: req.user.email,
         role: req.user.role,
-        cart: req.user.cartQuantity
+        phone: req.user.phone,
+        cart: req.user.cartQuantity,
+        _id: req.user._id,
+        avatar: req.user.avatar
       }
     })
   } catch (error) {
@@ -110,7 +113,10 @@ export const getProfile = (req, res) => {
         account: req.user.account,
         email: req.user.email,
         role: req.user.role,
-        cart: req.user.cartQuantity
+        cart: req.user.cartQuantity,
+        phone: req.user.phone,
+        _id: req.user._id,
+        avatar: req.user.avatar
       }
     })
   } catch (error) {
@@ -198,5 +204,49 @@ export const getCart = async (req, res) => {
       success: false,
       message: '未知錯誤'
     })
+  }
+}
+
+// 修改使用者資料
+export const edit = async (req, res) => {
+  try {
+    if (!validator.isMongoId(req.params.id)) throw new Error('ID')
+
+    // 1. 先把圖片路徑放進 req.body.image
+    // 編輯時前端不一定會傳圖片，req.file 是 undefined，undefined 沒有 .path 所以要用 ?. 避免錯誤
+    req.body.avatar = req.file?.path
+    // 2. 再丟 req.body 更新資料，如果沒有圖片 req.file?.path 就是 undefined，不會更新圖片
+    // .findByIdAndUpdate(要修改的資料 ID, 要修改的資料, { 更新時是否執行驗證: 預設 false })
+    await users.findByIdAndUpdate(req.params.id, req.body, { runValidators: true }).orFail(new Error('NOT FOUND')) // orFail() 如果沒有找到資料，就自動丟出錯誤
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      message: ''
+    })
+  } catch (error) {
+    console.log('ID 格式錯誤_個人資料')
+    if (error.name === 'CastError' || error.message === 'ID') {
+      res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: 'ID 格式錯誤'
+      })
+    } else if (error.message === 'NOT FOUND') {
+      res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        message: '查無使用者'
+      })
+    } else if (error.name === 'ValidationError') {
+      const key = Object.keys(error.errors)[0]
+      const message = error.errors[key].message
+      res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message
+      })
+    } else {
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: '未知錯誤'
+      })
+    }
   }
 }
