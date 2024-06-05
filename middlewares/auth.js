@@ -7,6 +7,9 @@ export const login = (req, res, next) => {
   // 3. 正常狀態下，使用來自 passport / passport.js 的 login 策略來驗證使用者的身份(user)。
   passport.authenticate('login', { session: false }, (error, user, info) => {
     if (!user || error) {
+      // 複習:|| 是邏輯 OR 運算符，如果其左側或右側的值為 true，則整個表達式的結果為 true。
+      // 因此，if (!user || error) 的意思是：如果 user 是假值，或者 error 是真值，則執行接下來的程式碼塊。
+      // 舉例: user 是假值（例如 null、undefined、NaN、0、空字串或 false）。error 是真值（即 error 存在且不是假值）。
       if (info.message === 'Missing credentials') {
         res.status(StatusCodes.BAD_REQUEST).json({
           success: false,
